@@ -132,6 +132,7 @@ defmodule ABI.TypeDecoder do
         ]
       }]
   """
+  @spec decode(binary, FunctionSelector) :: list
   def decode(encoded_data, function_selector) do
     decode_raw(encoded_data, function_selector.types)
   end
