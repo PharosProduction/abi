@@ -100,12 +100,12 @@ defmodule ABI.TypeEncoder do
   # def encode(data, function_selector) do
   #   encode_method_id(function_selector) <> encode_raw(data, function_selector.types)
   # end
-  @spec encode(list, FunctionSelector.t()) :: binary
-  def encode(_data, %FunctionSelector{types: []} = function_selector) do
+  @spec encode(list, ABI.FunctionSelector.t()) :: binary
+  def encode(_data, %ABI.FunctionSelector{types: []} = function_selector) do
     encode_method_id(function_selector)
   end
 
-  @spec encode(list, FunctionSelector.t()) :: binary
+  @spec encode(list, ABI.FunctionSelector.t()) :: binary
   def encode(data, function_selector) do
     # crooked nail
     types = [tuple: function_selector.types]
