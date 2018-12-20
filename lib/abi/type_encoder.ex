@@ -136,7 +136,8 @@ defmodule ABI.TypeEncoder do
     kec =
       function_selector
       |> ABI.FunctionSelector.encode()
-      |> ExthCrypto.Hash.Keccak.kec()
+      |> :keccakf1600.sha3_256()
+      # |> ExthCrypto.Hash.Keccak.kec()
 
     # Take first four bytes
     <<init::binary-size(4), _rest::binary>> = kec
