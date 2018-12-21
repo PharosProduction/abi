@@ -140,22 +140,19 @@ defmodule ABI.TypeDecoder do
   @doc """
   Similar to `ABI.TypeDecoder.decode/2` except accepts a list of types instead
   of a function selector.
-
   ## Examples
-
       iex> "000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000007617765736f6d6500000000000000000000000000000000000000000000000000"
       ...> |> Base.decode16!(case: :lower)
       ...> |> ABI.TypeDecoder.decode_raw([{:tuple, [:string, :bool]}])
       [{"awesome", true}]
   """
+  @spec decode_raw(binary, FunctionSelector) :: list
   def decode_raw(encoded_data, types) do
     do_decode(types, encoded_data, [])
   end
 
-  @spec do_decode([ABI.FunctionSelector.type()], binary(), [any()]) :: [any()]
-  defp do_decode([], bin, _) when byte_size(bin) > 0,
-    do: raise("Found extra binary data: #{inspect(bin)}")
-
+  @spec do_decode([FunctionSelector.type()], binary(), [any()]) :: [any()]
+  defp do_decode([], bin, _) when byte_size(bin) > 0, do: raise("Found extra binary data: #{inspect(bin)}")
   defp do_decode([], _, acc), do: Enum.reverse(acc)
 
   defp do_decode([type | remaining_types], data, acc) do
@@ -164,7 +161,7 @@ defmodule ABI.TypeDecoder do
     do_decode(remaining_types, remaining_data, [decoded | acc])
   end
 
-  @spec decode_type(ABI.FunctionSelector.type(), binary()) :: {any(), binary()}
+  @spec decode_type(FunctionSelector.type(), binary()) :: {any(), binary()}
   defp decode_type({:uint, size_in_bits}, data) do
     decode_uint(data, size_in_bits)
   end
@@ -219,7 +216,7 @@ defmodule ABI.TypeDecoder do
     # First pass, decode static types
     {elements, rest} =
       Enum.reduce(types, {[], starting_data}, fn type, {elements, data} ->
-        if ABI.FunctionSelector.is_dynamic?(type) do
+        if FunctionSelector.is_dynamic?(type) do
           {tail_position, rest} = decode_type({:uint, 256}, data)
 
           {[{:dynamic, type, tail_position} | elements], rest}
@@ -254,7 +251,7 @@ defmodule ABI.TypeDecoder do
   @spec decode_uint(binary(), integer()) :: {integer(), binary()}
   defp decode_uint(data, size_in_bits) do
     # TODO: Create `left_pad` repo, err, add to `ExthCrypto.Math`
-    total_bit_size = size_in_bits + ExthCrypto.Math.mod(256 - size_in_bits, 256)
+    total_bit_size = size_in_bits + mod(256 - size_in_bits, 256)
 
     <<value::integer-size(total_bit_size), rest::binary>> = data
 
@@ -263,22 +260,17 @@ defmodule ABI.TypeDecoder do
 
   @spec decode_bytes(binary(), integer(), atom()) :: {binary(), binary()}
   def decode_bytes(data, size_in_bytes, padding_direction) do
-    # TODO: Create `unright_pad` repo, err, add to `ExthCrypto.Math`
-    total_size_in_bytes =
-      size_in_bytes + ExthCrypto.Math.mod(32 - ExthCrypto.Math.mod(size_in_bytes, 32), 32)
-
+    total_size_in_bytes = size_in_bytes + mod(32 - mod(size_in_bytes, 32), 32)
     padding_size_in_bytes = total_size_in_bytes - size_in_bytes
 
     case padding_direction do
       :left ->
-        <<_padding::binary-size(padding_size_in_bytes), value::binary-size(size_in_bytes),
-          rest::binary()>> = data
+        <<_padding::binary-size(padding_size_in_bytes), value::binary-size(size_in_bytes), rest::binary()>> = data
 
         {value, rest}
 
       :right ->
-        <<value::binary-size(size_in_bytes), _padding::binary-size(padding_size_in_bytes),
-          rest::binary()>> = data
+        <<value::binary-size(size_in_bytes), _padding::binary-size(padding_size_in_bytes), rest::binary()>> = data
 
         {value, rest}
     end
@@ -289,4 +281,9 @@ defmodule ABI.TypeDecoder do
     [pre_nul_part | _] = :binary.split(raw_string, <<0>>)
     pre_nul_part
   end
+
+  @spec mod(integer, integer) :: integer
+  defp mod(x, n) when x > 0, do: rem(x, n)
+  defp mod(x, n) when x < 0, do: rem(n + x, n)
+  defp mod(0, _n), do: 0
 end

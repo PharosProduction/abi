@@ -137,7 +137,6 @@ defmodule ABI.TypeEncoder do
       function_selector
       |> ABI.FunctionSelector.encode()
       |> :keccakf1600.sha3_256()
-      # |> ExthCrypto.Hash.Keccak.kec()
 
     # Take first four bytes
     <<init::binary-size(4), _rest::binary>> = kec
@@ -262,10 +261,7 @@ defmodule ABI.TypeEncoder do
   end
 
   defp pad(bin, size_in_bytes, direction) do
-    # TODO: Create `left_pad` repo, err, add to `ExthCrypto.Math`
-    total_size =
-      size_in_bytes + ExthCrypto.Math.mod(32 - ExthCrypto.Math.mod(size_in_bytes, 32), 32)
-
+    total_size = size_in_bytes + mod(32 - mod(size_in_bytes, 32), 32)
     padding_size_bits = (total_size - byte_size(bin)) * 8
     padding = <<0::size(padding_size_bits)>>
 
@@ -274,6 +270,11 @@ defmodule ABI.TypeEncoder do
       :right -> bin <> padding
     end
   end
+
+  @spec mod(integer, integer) :: integer
+  defp mod(x, n) when x > 0, do: rem(x, n)
+  defp mod(x, n) when x < 0, do: rem(n + x, n)
+  defp mod(0, _n), do: 0
 
   @spec maybe_encode_unsigned(binary() | integer()) :: binary()
   defp maybe_encode_unsigned(bin) when is_binary(bin), do: bin
