@@ -1,3 +1,6 @@
+By [Dmytro Nasyrov, Founder, CTO at Pharos Production Inc.](https://www.linkedin.com/in/dmytronasyrov/)
+And [Pharos Production Inc. - Web3, blockchain, fintech, defi software development services](https://pharosproduction.com)
+
 # ABI [![CircleCI](https://circleci.com/gh/exthereum/abi.svg?style=svg)](https://circleci.com/gh/exthereum/abi)
 
 The [Application Binary Interface](https://solidity.readthedocs.io/en/develop/abi-spec.html) (ABI) of Solidity describes how to transform binary data to types which the Solidity programming language understands. For instance, if we want to call a function `bark(uint32,bool)` on a Solidity-created contract `contract Dog`, what `data` parameter do we pass into our Ethereum transaction? This project allows us to encode such function calls.
